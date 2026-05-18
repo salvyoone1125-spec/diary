@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>つぶやき日記</title>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+1:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --accent:#5BB8B8; --accent-light:#E8F5F5;
+  --bg:#F2F2F7; --card:#FFFFFF;
+  --tp:#1C1C1E; --ts:#8E8E93; --sep:#E5E5EA;
+  --nh:78px; --font:'M PLUS 1',-apple-system,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:var(--font);color:var(--tp)}
+body{background:var(--bg);max-width:430px;margin:0 auto}
+body.has-bg{background-image:var(--bgImg);background-size:cover;background-position:center}
+
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden;position:relative;background:transparent}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;background:transparent}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── Home header (white sticky) ── */
+.home-hd{background:#fff;position:sticky;top:0;z-index:50;border-bottom:1px solid var(--sep)}
+.hd-row{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 6px}
+.hd-date{font-size:19px;font-weight:700}
+.hd-btns{display:flex;gap:2px}
+.hd-btn{background:none;border:none;width:34px;height:34px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hd-btn svg{width:20px;height:20px;fill:var(--ts)}
+.hd-btn:active{background:var(--bg)}
+
+.week-row{display:flex;justify-content:space-between;padding:2px 16px 10px}
+.wday{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:40px}
+.wday-n{font-size:12px;color:var(--ts)}
+.wday-d{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;border-radius:50%}
+.wday-d.today{background:var(--accent);color:#fff}
+.wday-d.sel:not(.today){background:var(--accent-light);color:var(--accent);font-weight:700}
+.wday-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}
+.wday-empty{height:5px}
+
+/* ── Tabs ── */
+.tab{display:none}
+.tab.on{display:block}
+#tHome{background:transparent}
+#tTags,#tPhotos,#tSearch,#tSettings{background:var(--bg);min-height:100%}
+
+/* ── Entries ── */
+.entries{padding:8px 14px 20px}
+.erow{display:flex;gap:8px;margin-bottom:14px;align-items:flex-start}
+.etime{font-size:11px;color:var(--ts);min-width:36px;flex-shrink:0;background:#fff;border-radius:10px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.1);align-self:flex-start;margin-top:4px}
+.ebubble{background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word}
+.ebubble img{width:100%;border-radius:10px;margin-top:8px;cursor:pointer;display:block}
+.etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.etag{font-size:12px;color:var(--accent);background:var(--accent-light);padding:2px 9px;border-radius:10px}
+.ebtns{display:flex;gap:4px;margin-top:7px;justify-content:flex-end}
+.ebtn{background:none;border:none;font-size:11px;color:var(--ts);cursor:pointer;padding:4px 8px;border-radius:8px;font-family:var(--font)}
+.ebtn.del{color:#FF3B30}
+.ebtn:active{background:var(--bg)}
+.dsep{text-align:center;padding:8px 0 4px;font-size:12px;font-weight:500;color:var(--ts)}
+
+/* ── Tags tab ── */
+.tags-hd{background:#fff;position:sticky;top:0;z-index:50;padding:12px 16px 10px;border-bottom:1px solid var(--sep)}
+.chip-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{padding:6px 16px;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;border:none;background:var(--sep);color:var(--ts);font-family:var(--font);transition:all .15s}
+.chip.on{background:var(--accent);color:#fff}
+
+/* ── Photos ── */
+.photos-hd{padding:14px 16px 10px;font-size:18px;font-weight:700;background:#fff;border-bottom:1px solid var(--sep)}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.pcell{aspect-ratio:1;overflow:hidden;cursor:pointer}
+.pcell img{width:100%;height:100%;object-fit:cover}
+
+/* ── Search ── */
+.search-hd{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--sep)}
+.search-in{width:100%;padding:10px 16px;border-radius:12px;border:none;background:var(--bg);font-size:16px;font-family:var(--font);outline:none;color:var(--tp)}
+.mem-card{margin:12px 16px;background:#fff;border-radius:16px;padding:16px 20px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.07);position:relative}
+.mem-card h3{font-size:15px;font-weight:700;margin-bottom:4px}
+.mem-card p{font-size:13px;color:var(--ts)}
+.mem-arr{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--ts);font-size:20px}
+
+/* ── Settings ── */
+.s-prof{margin:14px 16px;border-radius:20px;overflow:hidden;display:flex;height:190px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.s-prof-img{width:55%;overflow:hidden;background:var(--sep);display:flex;align-items:center;justify-content:center;cursor:pointer}
+.s-prof-img img{width:100%;height:100%;object-fit:cover}
+.s-prof-r{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.s-swatch{width:50px;height:50px;border-radius:50%;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;cursor:pointer;border:2px solid var(--sep)}
+.s-sec{margin:0 16px 16px}
+.s-sec-lbl{font-size:13px;color:var(--ts);padding:0 4px 6px;font-weight:500}
+.s-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.s-row{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--sep);cursor:pointer;gap:12px}
+.s-row:last-child{border-bottom:none}
+.s-row:active{background:var(--bg)}
+.s-ico{width:28px;text-align:center;font-size:18px}
+.s-txt{flex:1;font-size:15px}
+.s-arr{color:var(--ts);font-size:18px}
+
+/* ── Nav ── */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--sep);height:var(--nh);display:flex;align-items:center;justify-content:space-around;padding:8px 8px 20px;z-index:100}
+.ni{display:flex;align-items:center;justify-content:center;cursor:pointer;padding:10px 18px;border-radius:22px;transition:all .15s;min-width:44px}
+.ni svg{width:22px;height:22px;fill:var(--ts)}
+.ni .hash{font-size:22px;font-weight:800;color:var(--ts);line-height:1}
+.ni.on{background:var(--accent)}
+.ni.on svg{fill:#fff}
+.ni.on .hash{color:#fff}
+
+/* ── FAB ── */
+.fab{position:fixed;bottom:calc(var(--nh) + 14px);right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.2);z-index:99}
+.fab:active{transform:scale(.93)}
+.fab svg{width:28px;height:28px;fill:#fff}
+
+/* ── Modals ── */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.mbg.hide{display:none}
+.msheet{background:#fff;border-radius:24px 24px 0 0;padding:14px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.mhandle{width:36px;height:4px;background:var(--sep);border-radius:2px;margin:0 auto 16px}
+.mtitle{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.mx-btn{background:var(--bg);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ts);flex-shrink:0}
+
+.flbl{font-size:12px;color:var(--ts);margin-bottom:5px;display:block;font-weight:500}
+.fin{width:100%;padding:10px 12px;border:1px solid var(--sep);border-radius:12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp)}
+.fta{width:100%;min-height:90px;border:1px solid var(--sep);border-radius:12px;padding:10px 12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp);resize:none;line-height:1.55}
+.frow{margin-bottom:12px}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+
+.imgprevs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.iprev{position:relative;width:76px;height:76px}
+.iprev img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.iprev-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#FF3B30;color:#fff;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+.add-img-lbl{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px dashed var(--sep);border-radius:12px;cursor:pointer;color:var(--ts);font-size:13px;margin-bottom:10px;font-family:var(--font)}
+.add-img-lbl svg{width:18px;height:18px;fill:var(--ts);flex-shrink:0}
+
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+.tagin{border:1px solid var(--sep);border-radius:20px;padding:4px 12px;font-size:13px;font-family:var(--font);outline:none;width:130px;background:var(--bg)}
+.rtag{display:flex;align-items:center;gap:4px;background:var(--accent-light);color:var(--accent);padding:4px 10px;border-radius:20px;font-size:13px}
+.rtag button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:14px;padding:0;line-height:1}
+
+.fact{display:flex;gap:10px;margin-top:14px}
+.btn-p{flex:1;padding:13px;background:var(--accent);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.btn-s{padding:13px 18px;background:var(--bg);color:var(--ts);border:none;border-radius:14px;font-size:15px;cursor:pointer;font-family:var(--font)}
+.btn-d{padding:13px 18px;background:#FFF0EE;color:#FF3B30;border:none;border-radius:14px;font-size:15px;cursor:pointer;font-family:var(--font)}
+.btn-w{width:100%;margin-top:8px;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font)}
+
+/* ── Theme picker ── */
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px;padding:8px 0}
+.titem{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer}
+.sw-wrap{position:relative}
+.sw{width:70px;height:70px;border-radius:50%;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;transition:transform .1s}
+.titem:active .sw{transform:scale(.93)}
+.sw-ring{position:absolute;inset:-3px;border-radius:50%;border:3px solid var(--accent);display:none}
+.titem.sel .sw-ring{display:block}
+.sw-chk{position:absolute;bottom:2px;right:2px;width:20px;height:20px;background:var(--accent);border-radius:50%;color:#fff;font-size:11px;display:none;align-items:center;justify-content:center}
+.titem.sel .sw-chk{display:flex}
+.tname{font-size:11px;color:var(--ts);text-align:center}
+.titem.sel .tname{color:var(--accent);font-weight:700}
+
+/* ── Image fullscreen ── */
+.ifs{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;display:flex;align-items:center;justify-content:center}
+.ifs.hide{display:none}
+.ifs img{max-width:100%;max-height:100%;object-fit:contain}
+.ifs-x{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+.tag-sugg-wrap{margin-bottom:10px}
+.tag-sugg-lbl{font-size:11px;color:var(--ts);margin-bottom:5px}
+.tag-suggs{display:flex;flex-wrap:wrap;gap:5px}
+.tag-sugg-chip{padding:4px 12px;border-radius:20px;border:1.5px solid var(--accent);color:var(--accent);background:transparent;font-size:12px;cursor:pointer;font-family:var(--font);transition:all .15s}
+.tag-sugg-chip:active{background:var(--accent-light)}
+.empty{text-align:center;padding:56px 20px;color:var(--ts)}
+.empty p{font-size:14px;margin-top:10px}
+.snack{position:fixed;bottom:calc(var(--nh)+16px);left:50%;transform:translateX(-50%);background:rgba(28,28,30,.9);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:400;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
+.snack.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="scroll" id="scr">
+
+    <!-- HOME -->
+    <div class="tab on" id="tHome">
+      <div class="home-hd">
+        <div class="hd-row">
+          <div class="hd-date" id="hdDate"></div>
+          <div class="hd-btns">
+            <button class="hd-btn" onclick="prevWeek()"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg></button>
+            <button class="hd-btn" onclick="goToday()"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></button>
+            <button class="hd-btn" onclick="nextWeek()"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
+          </div>
+        </div>
+        <div class="week-row" id="weekRow"></div>
+      </div>
+      <div class="entries" id="homeEntries"></div>
+    </div>
+
+    <!-- TAGS -->
+    <div class="tab" id="tTags">
+      <div class="tags-hd">
+        <div class="chip-row" id="chipRow"></div>
+      </div>
+      <div class="entries" id="tagEntries"></div>
+    </div>
+
+    <!-- PHOTOS -->
+    <div class="tab" id="tPhotos">
+      <div class="photos-hd">写真</div>
+      <div class="pgrid" id="pgrid"></div>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="tab" id="tSearch">
+      <div class="search-hd">
+        <input class="search-in" id="searchIn" placeholder="検索" oninput="onSearch(this.value)">
+      </div>
+      <div id="searchRes"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="tab" id="tSettings">
+      <div class="s-prof">
+        <label class="s-prof-img" for="bgIn" id="profImg">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="#C7C7CC"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        </label>
+        <div class="s-prof-r">
+          <div style="text-align:center">
+            <div style="font-size:10px;color:var(--ts);letter-spacing:.5px;margin-bottom:6px">THEME</div>
+            <div class="s-swatch" id="sSwatch" onclick="openThemeModal()"></div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:var(--ts);letter-spacing:.5px;margin-bottom:4px">FONT</div>
+            <div style="font-size:13px;font-weight:700">M PLUS 1</div>
+          </div>
+        </div>
+      </div>
+      <div class="s-sec"><div class="s-sec-lbl">カスタム</div>
+        <div class="s-card">
+          <label class="s-row" for="bgIn"><span class="s-ico">🖼️</span><span class="s-txt">背景画像を選択</span><span class="s-arr">›</span></label>
+          <div class="s-row" onclick="clearBg()"><span class="s-ico">✕</span><span class="s-txt">背景画像をリセット</span><span class="s-arr">›</span></div>
+          <div class="s-row" onclick="openThemeModal()"><span class="s-ico">🎨</span><span class="s-txt">テーマを変更</span><span class="s-arr">›</span></div>
+        </div>
+      </div>
+      <div class="s-sec"><div class="s-sec-lbl">エクスポート</div>
+        <div class="s-card">
+          <div class="s-row" onclick="openSaveDayModal()"><span class="s-ico">📷</span><span class="s-txt">1日分を画像で保存</span><span class="s-arr">›</span></div>
+          <div class="s-row" onclick="openPdfModal()"><span class="s-ico">📄</span><span class="s-txt">PDFで保存</span><span class="s-arr">›</span></div>
+        </div>
+      </div>
+      <div class="s-sec"><div class="s-sec-lbl">バックアップ</div>
+        <div class="s-card">
+          <div class="s-row" onclick="exportJSON()"><span class="s-ico">💾</span><span class="s-txt">JSONでエクスポート</span><span class="s-arr">›</span></div>
+          <label class="s-row" for="importIn"><span class="s-ico">📂</span><span class="s-txt">JSONからインポート</span><span class="s-arr">›</span></label>
+        </div>
+      </div>
+      <div class="s-sec"><div class="s-sec-lbl">データ</div>
+        <div class="s-card">
+          <div class="s-row" onclick="clearAll()"><span class="s-ico" style="color:#FF3B30">🗑️</span><span class="s-txt" style="color:#FF3B30">全データを削除</span><span class="s-arr" style="color:#FF3B30">›</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /scroll -->
+
+  <nav class="nav">
+    <div class="ni on" id="nHome" onclick="goTab('Home')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h7v2H7z"/></svg></div>
+    <div class="ni" id="nTags" onclick="goTab('Tags')"><span class="hash">#</span></div>
+    <div class="ni" id="nPhotos" onclick="goTab('Photos')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
+    <div class="ni" id="nSearch" onclick="goTab('Search')"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
+    <div class="ni" id="nSettings" onclick="goTab('Settings')"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.22-.07.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
+  </nav>
+</div>
+
+<button class="fab" id="fab" onclick="openNew()"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>
+
+<!-- NEW/EDIT ENTRY MODAL -->
+<div class="mbg hide" id="entryModal">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle"><span id="entryModalTitle">新しい投稿</span><button class="mx-btn" onclick="closeModal('entryModal')">✕</button></div>
+    <div class="f2">
+      <div><label class="flbl">日付</label><input class="fin" type="date" id="eDate"></div>
+      <div><label class="flbl">時刻</label><input class="fin" type="time" id="eTime"></div>
+    </div>
+    <div class="frow"><label class="flbl">内容</label><textarea class="fta" id="eTxt" placeholder="いまどうしてる？"></textarea></div>
+    <div class="frow">
+      <label class="flbl">画像</label>
+      <div class="imgprevs" id="ePrevs"></div>
+      <label class="add-img-lbl" for="imgIn"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>画像を追加</label>
+    </div>
+    <div class="frow">
+      <label class="flbl">タグ</label>
+      <div class="tagrow" id="eTagRow"><input class="tagin" id="eTagIn" placeholder="タグを追加… (Enter)" onkeydown="addTag(event)" oninput="filterSuggs(this.value)"></div>
+      <div class="tag-sugg-wrap" id="tagSuggWrap"></div>
+    </div>
+    <div class="fact">
+      <button class="btn-s" id="eDelBtn" style="display:none" onclick="doDelete()">削除</button>
+      <button class="btn-p" onclick="submitEntry()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- THEME MODAL -->
+<div class="mbg hide" id="themeModal">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">テーマ<button class="mx-btn" onclick="closeModal('themeModal')">完了</button></div>
+    <div class="tgrid" id="tgrid"></div>
+  </div>
+</div>
+
+<!-- PDF MODAL -->
+<div class="mbg hide" id="pdfModal">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">PDFで保存<button class="mx-btn" onclick="closeModal('pdfModal')">✕</button></div>
+    <div class="frow"><label class="flbl">開始日</label><input class="fin" type="date" id="pStart"></div>
+    <div class="frow"><label class="flbl">終了日</label><input class="fin" type="date" id="pEnd"></div>
+    <button class="btn-w btn-p" onclick="exportPDF()">PDFを生成</button>
+    <button class="btn-w" style="background:var(--bg);color:var(--ts);margin-top:8px" onclick="closeModal('pdfModal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- SAVE DAY MODAL -->
+<div class="mbg hide" id="saveDayModal">
+  <div class="msheet">
+    <div class="mhandle"></div>
+    <div class="mtitle">1日分を画像保存<button class="mx-btn" onclick="closeModal('saveDayModal')">✕</button></div>
+    <div class="frow"><label class="flbl">日付</label><input class="fin" type="date" id="sdDate"></div>
+    <button class="btn-w btn-p" onclick="saveDayImg()">画像を保存</button>
+    <button class="btn-w" style="background:var(--bg);color:var(--ts);margin-top:8px" onclick="closeModal('saveDayModal')">キャンセル</button>
+  </div>
+</div>
+
+<!-- IMAGE FULLSCREEN -->
+<div class="ifs hide" id="ifs" onclick="this.classList.add('hide')">
+  <button class="ifs-x" onclick="document.getElementById('ifs').classList.add('hide')">✕</button>
+  <img id="ifsImg" src="" alt="">
+</div>
+
+<div class="snack" id="snack"></div>
+
+<!-- FILE INPUTS -->
+<input type="file" id="imgIn" accept="image/*" multiple style="display:none" onchange="handleImgs(this,false)">
+<input type="file" id="bgIn" accept="image/*" style="display:none" onchange="handleBgImg(this)">
+<input type="file" id="importIn" accept=".json" style="display:none" onchange="importJSON(this)">
+
+<script>
+// ═══════════════════════════════════
+// THEMES
+// ═══════════════════════════════════
+const THEMES = [
+  {id:'blue',    name:'Blue',       q:['#F2F2F7','#FFFFFF','#5BB8B8','#A8D8D8'], accent:'#5BB8B8', al:'#E8F5F5', bg:'#F2F2F7'},
+  {id:'yellow',  name:'Yellow',     q:['#F5F2E5','#FFFFFF','#D4A843','#F0D898'], accent:'#D4A843', al:'#FDF5DC', bg:'#F5F2E5'},
+  {id:'inknavy', name:'Ink Navy',   q:['#F8F8F8','#FFFFFF','#2B3A60','#E8B843'], accent:'#2B3A60', al:'#E8EAF0', bg:'#F8F8F8'},
+  {id:'inkred',  name:'Ink Red',    q:['#F8F8F8','#FFFFFF','#2B3A60','#C0392B'], accent:'#C03040', al:'#FDEAEA', bg:'#F8F8F8'},
+  {id:'snow',    name:'Snow',       q:['#EBF3F7','#FFFFFF','#6BADC8','#B0D4E5'], accent:'#6BADC8', al:'#E0F0F8', bg:'#EBF3F7'},
+  {id:'azure',   name:'Azure',      q:['#F5F8FC','#FFFFFF','#3B7FCC','#E87848'], accent:'#3B7FCC', al:'#E0ECFA', bg:'#F5F8FC'},
+  {id:'lilac',   name:'Lilac',      q:['#F8F5FC','#FFFFFF','#8B70B8','#7BB870'], accent:'#8B70B8', al:'#EDE8F8', bg:'#F8F5FC'},
+  {id:'babypeach',name:'Baby Peach',q:['#FDF5EF','#FFFFFF','#E89068','#F0C8A8'], accent:'#E89068', al:'#FDE8DC', bg:'#FDF5EF'},
+  {id:'soda',    name:'Soda',       q:['#E5F0F8','#FFFFFF','#4888C0','#80B8E0'], accent:'#4888C0', al:'#DCF0F8', bg:'#E5F0F8'},
+  {id:'peppermint',name:'Peppermint',q:['#EDF8F4','#FFFFFF','#2E8B70','#3B9B82'],accent:'#2E8B70', al:'#DCF5EE', bg:'#EDF8F4'},
+  {id:'sakura',  name:'Sakura',     q:['#FEF2F3','#FFFFFF','#E06878','#F0A0A8'], accent:'#E06878', al:'#FDEAEC', bg:'#FEF2F3'},
+  {id:'mustard', name:'Mustard',    q:['#FAF8EC','#FFFFFF','#C8A028','#E0C870'], accent:'#C8A028', al:'#FAF0D0', bg:'#FAF8EC'},
+  {id:'purple',  name:'Purple',     q:['#F5F0FA','#FFFFFF','#8855A8','#C090D8'], accent:'#8855A8', al:'#EDE0F8', bg:'#F5F0FA'},
+  {id:'paper',   name:'Paper',      q:['#FAF6EE','#FFFFFF','#907055','#C8A880'], accent:'#907055', al:'#F5ECD8', bg:'#FAF6EE'},
+  {id:'autumn',  name:'Autumn',     q:['#F8F8F5','#FFFFFF','#3A7068','#D2622A'], accent:'#3A7068', al:'#DCF0EC', bg:'#F8F8F5'},
+  {id:'grey',    name:'Grey',       q:['#F0F2F5','#FFFFFF','#6B7B90','#A8B8C8'], accent:'#6B7B90', al:'#E0E5EC', bg:'#F0F2F5'},
+  {id:'newyork', name:'New York',   q:['#F8F8F8','#FFFFFF','#2B3065','#C03850'], accent:'#2B3065', al:'#E0E2EE', bg:'#F8F8F8'},
+  {id:'pistachio',name:'Pistachio', q:['#F5F8EE','#FFFFFF','#7B9840','#A8C060'], accent:'#7B9840', al:'#ECF5D8', bg:'#F5F8EE'},
+  {id:'blue2',   name:'Blue',       q:['#E5EBF8','#FFFFFF','#3855A8','#6080D0'], accent:'#3855A8', al:'#DCE4F8', bg:'#E5EBF8'},
+  {id:'green',   name:'Green',      q:['#E5F0EA','#FFFFFF','#2E7050','#60A880'], accent:'#2E7050', al:'#D8F0E4', bg:'#E5F0EA'},
+];
+
+// ═══════════════════════════════════
+// STATE & DATA
+// ═══════════════════════════════════
+const EK = 'diary_v3', SK = 'diary_s3';
+let entries=[], cfg={theme:'blue'};
+let selDate=new Date(), selTag='all';
+let eImgs=[], eTags=[], editId=null;
+
+function load(){
+  try{entries=JSON.parse(localStorage.getItem(EK)||'[]')}catch{entries=[]}
+  try{cfg=JSON.parse(localStorage.getItem(SK)||'{}')}catch{cfg={}}
+  if(!cfg.theme)cfg.theme='blue';
+}
+function saveE(){localStorage.setItem(EK,JSON.stringify(entries))}
+function saveC(){localStorage.setItem(SK,JSON.stringify(cfg))}
+function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
+function ds(d){
+  if(!(d instanceof Date))return d;
+  const y=d.getFullYear(),m=(d.getMonth()+1).toString().padStart(2,'0'),day=d.getDate().toString().padStart(2,'0');
+  return`${y}-${m}-${day}`;
+}
+function fmtT(iso){const d=new Date(iso);return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')}
+function fmtD(s){const d=new Date(s+'T12:00:00'),dow=['日','月','火','水','木','金','土'][d.getDay()];return`${d.getFullYear()}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}(${dow})`}
+function fmtDJP(d){const dow=['日','月','火','水','木','金','土'][d.getDay()];return`${d.getMonth()+1}月${d.getDate()}日(${dow})`}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function snack(m){const e=document.getElementById('snack');e.textContent=m;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2200)}
+
+// Image compress
+async function compress(dataUrl){
+  return new Promise(r=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width,h=img.height,M=1200;
+      if(w>M||h>M){if(w>=h){h=Math.round(h*M/w);w=M}else{w=Math.round(w*M/h);h=M}}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      r(c.toDataURL('image/jpeg',.78));
+    };
+    img.src=dataUrl;
+  });
+}
+
+// ═══════════════════════════════════
+// CRUD
+// ═══════════════════════════════════
+function addEntry(date,time,content,images,tags){
+  const iso=new Date(date+'T'+time+':00').toISOString();
+  entries.unshift({id:gid(),content,images,tags,timestamp:iso,date});
+  saveE();
+}
+function updateEntry(id,date,time,content,images,tags){
+  const iso=new Date(date+'T'+time+':00').toISOString();
+  const i=entries.findIndex(e=>e.id===id);
+  if(i>-1)entries[i]={...entries[i],content,images,tags,timestamp:iso,date};
+  saveE();
+}
+function delEntry(id){entries=entries.filter(e=>e.id!==id);saveE()}
+function byDate(d){return entries.filter(e=>e.date===d).sort((a,b)=>a.timestamp.localeCompare(b.timestamp))}
+function allTags(){const s=new Set();entries.forEach(e=>e.tags.forEach(t=>s.add(t)));return[...s]}
+function allImgs(){const a=[];entries.forEach(e=>e.images.forEach(src=>a.push({src,ts:e.timestamp})));return a.sort((a,b)=>b.ts.localeCompare(a.ts))}
+
+// ═══════════════════════════════════
+// RENDER ENTRIES
+// ═══════════════════════════════════
+function entryHTML(e){
+  const imgs=e.images.map(s=>`<img src="${s}" loading="lazy" onclick="openImg(this.src)">`).join('');
+  const tags=e.tags.length?`<div class="etags">${e.tags.map(t=>`<span class="etag">${esc(t)}</span>`).join('')}</div>`:'';
+  let txt=esc(e.content||'');
+  txt=txt.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">$1</a>');
+  return`<div class="erow" id="e${e.id}"><div class="etime">${fmtT(e.timestamp)}</div><div class="ebubble">${txt?`<div>${txt}</div>`:''}${imgs}${tags}<div class="ebtns"><button class="ebtn" onclick='openEdit("${e.id}")'>編集</button><button class="ebtn del" onclick='askDel("${e.id}")'>削除</button></div></div></div>`;
+}
+
+function renderGrouped(list,cid){
+  const c=document.getElementById(cid);
+  if(!list.length){c.innerHTML='<div class="empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="#ccc"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg><p>投稿がありません</p></div>';return}
+  const g={};list.forEach(e=>{(g[e.date]||(g[e.date]=[])).push(e)});
+  c.innerHTML=Object.keys(g).sort((a,b)=>b.localeCompare(a)).map(d=>`<div class="dsep">${fmtD(d)}</div>`+g[d].sort((a,b)=>a.timestamp.localeCompare(b.timestamp)).map(entryHTML).join('')).join('');
+}
+
+// ═══════════════════════════════════
+// HOME TAB
+// ═══════════════════════════════════
+function renderHome(){
+  document.getElementById('hdDate').textContent=fmtDJP(selDate);
+  renderWeek();
+  const sd=ds(selDate), list=byDate(sd), c=document.getElementById('homeEntries');
+  if(!list.length){c.innerHTML='<div class="empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="#ccc"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg><p>この日の投稿はまだありません<br><span style="font-size:12px">＋ボタンで追加できます</span></p></div>'}
+  else c.innerHTML=list.map(entryHTML).join('');
+}
+
+function renderWeek(){
+  // 週はselDateを含む週を表示（常に一致）
+  const mon=new Date(selDate);
+  mon.setDate(mon.getDate()-((mon.getDay()+6)%7));
+  mon.setHours(0,0,0,0);
+  const today=ds(new Date()), sel=ds(selDate);
+  document.getElementById('weekRow').innerHTML=['月','火','水','木','金','土','日'].map((_,i)=>{
+    const d=new Date(mon);d.setDate(mon.getDate()+i);const s=ds(d);
+    const isT=s===today,isS=s===sel,hasDot=entries.some(e=>e.date===s);
+    return`<div class="wday" onclick="pickDay('${s}')"><div class="wday-n">${_}</div><div class="wday-d${isT?' today':isS?' sel':''}">${d.getDate()}</div><div class="${hasDot&&!isT?'wday-dot':'wday-empty'}"></div></div>`;
+  }).join('');
+}
+
+function pickDay(s){selDate=new Date(s+'T12:00:00');renderHome();}
+function prevWeek(){selDate=new Date(selDate);selDate.setDate(selDate.getDate()-7);renderHome();}
+function nextWeek(){selDate=new Date(selDate);selDate.setDate(selDate.getDate()+7);renderHome();}
+function goToday(){selDate=new Date();renderAll();}
+
+// ═══════════════════════════════════
+// TAGS TAB
+// ═══════════════════════════════════
+function renderTags(){
+  const tags=allTags();
+  document.getElementById('chipRow').innerHTML=[
+    `<button class="chip${selTag==='all'?' on':''}" onclick="pickTag('all')">すべて</button>`,
+    ...tags.map(t=>`<button class="chip${selTag===t?' on':''}" onclick="pickTag('${esc(t)}')">${esc(t)}</button>`)
+  ].join('');
+  const list=selTag==='all'?entries:entries.filter(e=>e.tags.includes(selTag));
+  renderGrouped(list,'tagEntries');
+}
+function pickTag(t){selTag=t;renderTags()}
+
+// ═══════════════════════════════════
+// PHOTOS
+// ═══════════════════════════════════
+function renderPhotos(){
+  const imgs=allImgs(),g=document.getElementById('pgrid');
+  if(!imgs.length){g.innerHTML='<div style="grid-column:1/-1;padding:48px;text-align:center;color:var(--ts)">写真がありません</div>';return}
+  g.innerHTML=imgs.map(i=>`<div class="pcell" onclick="openImg('${i.src.replace(/'/g,"\\'")}')"><img src="${i.src}" loading="lazy"></div>`).join('');
+}
+
+// ═══════════════════════════════════
+// SEARCH
+// ═══════════════════════════════════
+let searchTimer;
+function onSearch(q){clearTimeout(searchTimer);searchTimer=setTimeout(()=>doSearch(q),280)}
+function doSearch(q){
+  const c=document.getElementById('searchRes');
+  if(!q.trim()){
+    const td=ds(new Date()),list=byDate(td);
+    if(list.length){const dow=['日','月','火','水','木','金','土'][new Date().getDay()];c.innerHTML=`<div class="mem-card" onclick="goTab('Home')"><span class="mem-arr">›</span><h3>${dow}曜日の思い出</h3><p>${esc((list[0].content||'写真').slice(0,40))}</p></div>`}
+    else c.innerHTML='';
+    return;
+  }
+  const r=entries.filter(e=>(e.content||'').toLowerCase().includes(q.toLowerCase())||e.tags.some(t=>t.toLowerCase().includes(q.toLowerCase())));
+  renderGrouped(r,'searchRes');
+}
+
+// ═══════════════════════════════════
+// SETTINGS PROFILE
+// ═══════════════════════════════════
+function renderSettingsProfile(){
+  const pi=document.getElementById('profImg');
+  if(cfg.bgImg)pi.innerHTML=`<img src="${cfg.bgImg}" alt="">`;
+  else pi.innerHTML=`<svg width="44" height="44" viewBox="0 0 24 24" fill="#C7C7CC"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`;
+  // update swatch
+  const th=THEMES.find(t=>t.id===cfg.theme)||THEMES[0];
+  const sw=document.getElementById('sSwatch');
+  sw.innerHTML=th.q.map(c=>`<div style="background:${c}"></div>`).join('');
+}
+
+// ═══════════════════════════════════
+// THEMES
+// ═══════════════════════════════════
+function applyTheme(id){
+  const th=THEMES.find(t=>t.id===id)||THEMES[0];
+  document.documentElement.style.setProperty('--accent',th.accent);
+  document.documentElement.style.setProperty('--accent-light',th.al);
+  document.documentElement.style.setProperty('--bg',th.bg);
+}
+
+function openThemeModal(){
+  renderThemeGrid();
+  document.getElementById('themeModal').classList.remove('hide');
+}
+
+function renderThemeGrid(){
+  document.getElementById('tgrid').innerHTML=THEMES.map(th=>`
+    <div class="titem${cfg.theme===th.id?' sel':''}" onclick="pickTheme('${th.id}')">
+      <div class="sw-wrap">
+        <div class="sw">${th.q.map(c=>`<div style="background:${c}"></div>`).join('')}</div>
+        <div class="sw-ring"></div>
+        <div class="sw-chk">✓</div>
+      </div>
+      <div class="tname">${th.name}</div>
+    </div>`).join('');
+}
+
+function pickTheme(id){
+  cfg.theme=id;saveC();applyTheme(id);renderThemeGrid();renderSettingsProfile();
+  snack('テーマを変更しました');
+}
+
+// ═══════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════
+let curTab='Home';
+function goTab(t){
+  ['Home','Tags','Photos','Search','Settings'].forEach(x=>{
+    document.getElementById('t'+x).classList.remove('on');
+    document.getElementById('n'+x).classList.remove('on');
+  });
+  document.getElementById('t'+t).classList.add('on');
+  document.getElementById('n'+t).classList.add('on');
+  document.getElementById('fab').style.display=t==='Settings'?'none':'flex';
+  curTab=t;
+  if(t==='Tags')renderTags();
+  else if(t==='Photos')renderPhotos();
+  else if(t==='Search')doSearch('');
+  else if(t==='Settings')renderSettingsProfile();
+}
+
+// ═══════════════════════════════════
+// ENTRY MODAL
+// ═══════════════════════════════════
+function openNew(){
+  editId=null;eImgs=[];eTags=[];
+  document.getElementById('entryModalTitle').textContent='新しい投稿';
+  document.getElementById('eDelBtn').style.display='none';
+  document.getElementById('eTxt').value='';
+  document.getElementById('eDate').value=ds(selDate);
+  document.getElementById('eTime').value=new Date().toTimeString().slice(0,5);
+  renderEPrevs();renderETags();filterSuggs('');
+  document.getElementById('entryModal').classList.remove('hide');
+  setTimeout(()=>document.getElementById('eTxt').focus(),150);
+}
+
+function openEdit(id){
+  const e=entries.find(x=>x.id===id);if(!e)return;
+  editId=id;
+  eImgs=[...e.images];
+  eTags=[...e.tags];
+  document.getElementById('entryModalTitle').textContent='投稿を編集';
+  document.getElementById('eDelBtn').style.display='block';
+  document.getElementById('eTxt').value=e.content||'';
+  document.getElementById('eDate').value=e.date;
+  document.getElementById('eTime').value=fmtT(e.timestamp);
+  renderEPrevs();renderETags();filterSuggs('');
+  document.getElementById('entryModal').classList.remove('hide');
+}
+
+function submitEntry(){
+  const date=document.getElementById('eDate').value;
+  const time=document.getElementById('eTime').value||'00:00';
+  const txt=document.getElementById('eTxt').value.trim();
+  if(!txt&&!eImgs.length){snack('内容を入力してください');return}
+  if(editId)updateEntry(editId,date,time,txt,[...eImgs],[...eTags]);
+  else addEntry(date,time,txt,[...eImgs],[...eTags]);
+  closeModal('entryModal');
+  renderAll();
+  snack(editId?'更新しました':'投稿しました');
+}
+
+function doDelete(){
+  delEntry(editId);
+  closeModal('entryModal');
+  renderAll();
+  snack('削除しました');
+}
+
+function askDel(id){
+  if(confirm('この投稿を削除しますか？')){delEntry(id);renderAll();snack('削除しました')}
+}
+
+// ═══════════════════════════════════
+// IMAGE HANDLING
+// ═══════════════════════════════════
+async function handleImgs(input){
+  const files=[...input.files];
+  for(const f of files){
+    const raw=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(f)});
+    const c=await compress(raw);
+    eImgs.push(c);
+  }
+  renderEPrevs();
+  input.value='';
+}
+
+function renderEPrevs(){
+  document.getElementById('ePrevs').innerHTML=eImgs.map((s,i)=>`<div class="iprev"><img src="${s}"><button class="iprev-del" onclick="rmEImg(${i})">✕</button></div>`).join('');
+}
+function rmEImg(i){eImgs.splice(i,1);renderEPrevs()}
+
+function openImg(src){document.getElementById('ifsImg').src=src;document.getElementById('ifs').classList.remove('hide')}
+
+// ═══════════════════════════════════
+// TAG HANDLING
+// ═══════════════════════════════════
+function addTag(evt){
+  if(evt.key==='Enter'||evt.key===','){
+    evt.preventDefault();
+    const v=evt.target.value.trim().replace(/,/g,'');
+    if(v&&!eTags.includes(v)){eTags.push(v);renderETags();filterSuggs('');}
+    evt.target.value='';
+  }
+}
+function addTagByName(t){
+  if(t&&!eTags.includes(t)){eTags.push(t);renderETags();filterSuggs('');}
+}
+function rmETag(i){eTags.splice(i,1);renderETags();filterSuggs('');}
+function renderETags(){
+  document.getElementById('eTagRow').innerHTML=
+    eTags.map((t,i)=>`<span class="rtag">${esc(t)}<button onclick="rmETag(${i})">✕</button></span>`).join('')+
+    `<input class="tagin" id="eTagIn" placeholder="タグを追加… (Enter)" onkeydown="addTag(event)" oninput="filterSuggs(this.value)">`;
+}
+function filterSuggs(q){
+  const wrap=document.getElementById('tagSuggWrap');
+  if(!wrap)return;
+  const existing=allTags().filter(t=>!eTags.includes(t));
+  const filtered=q?existing.filter(t=>t.toLowerCase().includes(q.toLowerCase())):existing;
+  if(!filtered.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=`<div class="tag-sugg-lbl">履歴から選択</div><div class="tag-suggs">${
+    filtered.map(t=>`<button class="tag-sugg-chip" onclick="addTagByName('${esc(t)}')">${esc(t)}</button>`).join('')
+  }</div>`;
+}
+
+// ═══════════════════════════════════
+// BACKGROUND IMAGE
+// ═══════════════════════════════════
+async function handleBgImg(input){
+  const f=input.files[0];if(!f)return;
+  const raw=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(f)});
+  const c=await compress(raw);
+  cfg.bgImg=c;saveC();applyBg();renderSettingsProfile();snack('背景画像を設定しました');
+  input.value='';
+}
+function clearBg(){delete cfg.bgImg;saveC();applyBg();renderSettingsProfile();snack('背景画像をリセットしました')}
+function applyBg(){
+  if(cfg.bgImg){document.body.style.backgroundImage=`url(${cfg.bgImg})`;document.body.classList.add('has-bg')}
+  else{document.body.style.backgroundImage='';document.body.classList.remove('has-bg')}
+}
+
+// ═══════════════════════════════════
+// PDF
+// ═══════════════════════════════════
+function openPdfModal(){const t=ds(new Date());document.getElementById('pStart').value=t;document.getElementById('pEnd').value=t;document.getElementById('pdfModal').classList.remove('hide')}
+async function exportPDF(){
+  const s=document.getElementById('pStart').value,e=document.getElementById('pEnd').value;
+  if(!s||!e||s>e){snack('日付を正しく入力してください');return}
+  const list=entries.filter(x=>x.date>=s&&x.date<=e).sort((a,b)=>a.timestamp.localeCompare(b.timestamp));
+  if(!list.length){snack('投稿がありません');return}
+  const{jsPDF}=window.jspdf;const doc=new jsPDF();
+  let y=20,cd='';
+  for(const x of list){
+    if(x.date!==cd){cd=x.date;if(y>20)y+=6;doc.setFontSize(13);doc.setTextColor(91,184,184);doc.text(fmtD(x.date),14,y);y+=6;doc.setDrawColor(91,184,184);doc.line(14,y,196,y);y+=6;doc.setTextColor(0,0,0)}
+    doc.setFontSize(10);doc.setTextColor(130,130,130);doc.text(fmtT(x.timestamp),14,y);y+=5;
+    if(x.content){doc.setFontSize(11);doc.setTextColor(28,28,30);const ls=doc.splitTextToSize(x.content,172);ls.forEach(l=>{if(y>272){doc.addPage();y=16}doc.text(l,14,y);y+=6})}
+    for(const img of x.images){if(y>200){doc.addPage();y=16}try{doc.addImage(img,'JPEG',14,y,80,60);y+=64}catch{}}
+    if(x.tags.length){doc.setFontSize(9);doc.setTextColor(91,184,184);doc.text(x.tags.map(t=>'#'+t).join('  '),14,y);y+=7}
+    y+=4;if(y>272){doc.addPage();y=16}
+  }
+  doc.save(`diary_${s}_${e}.pdf`);closeModal('pdfModal');snack('PDFを保存しました');
+}
+
+// ═══════════════════════════════════
+// SAVE DAY AS IMAGE
+// ═══════════════════════════════════
+function openSaveDayModal(){document.getElementById('sdDate').value=ds(selDate);document.getElementById('saveDayModal').classList.remove('hide')}
+async function saveDayImg(){
+  const d=document.getElementById('sdDate').value;
+  if(!d)return;
+  const list=byDate(d);if(!list.length){snack('この日の投稿がありません');return}
+  const wrap=document.createElement('div');
+  Object.assign(wrap.style,{width:'390px',background:getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#F2F2F7',padding:'20px',fontFamily:'-apple-system,sans-serif',position:'absolute',left:'-9999px',top:'0'});
+  wrap.innerHTML=`<div style="font-size:20px;font-weight:700;margin-bottom:16px">${fmtD(d)}</div>`+list.map(e=>`<div style="display:flex;gap:8px;margin-bottom:14px"><div style="font-size:11px;color:#8E8E93;min-width:32px;padding-top:4px">${fmtT(e.timestamp)}</div><div style="background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55">${esc(e.content||'')}${e.images.map(s=>`<img src="${s}" style="width:100%;border-radius:10px;margin-top:8px;display:block">`).join('')}${e.tags.length?`<div style="margin-top:7px">${e.tags.map(t=>`<span style="font-size:12px;color:${cfg.accent||'#5BB8B8'};background:#E8F5F5;padding:2px 9px;border-radius:10px;margin-right:4px">${esc(t)}</span>`).join('')}</div>`:''}</div></div>`).join('');
+  document.body.appendChild(wrap);
+  try{const cv=await html2canvas(wrap,{useCORS:true,scale:2});const a=document.createElement('a');a.download=`diary_${d}.png`;a.href=cv.toDataURL('image/png');a.click();snack('画像を保存しました')}
+  catch{snack('画像生成に失敗しました')}
+  document.body.removeChild(wrap);closeModal('saveDayModal');
+}
+
+// ═══════════════════════════════════
+// MISC
+// ═══════════════════════════════════
+function closeModal(id){document.getElementById(id).classList.add('hide')}
+function clearAll(){if(confirm('全データを削除しますか？')){entries=[];saveE();renderAll();snack('削除しました')}}
+
+function exportJSON(){
+  const data=JSON.stringify({entries,exportedAt:new Date().toISOString()},null,2);
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+  a.download=`diary_backup_${ds(new Date())}.json`;
+  a.click();
+  snack('エクスポートしました');
+}
+
+function importJSON(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!Array.isArray(data.entries))throw new Error();
+      if(!confirm(`${data.entries.length}件の投稿をインポートします。\n既存のデータと統合されます。よろしいですか？`))return;
+      // IDが重複しないよう既存にないものだけ追加
+      const existIds=new Set(entries.map(x=>x.id));
+      const added=data.entries.filter(x=>!existIds.has(x.id));
+      entries=[...entries,...added];
+      saveE();renderAll();
+      snack(`${added.length}件をインポートしました`);
+    }catch{snack('ファイルの読み込みに失敗しました');}
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+['entryModal','themeModal','pdfModal','saveDayModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id)})
+});
+
+function renderAll(){
+  renderHome();
+  if(curTab==='Tags')renderTags();
+  else if(curTab==='Photos')renderPhotos();
+}
+
+// ═══════════════════════════════════
+// INIT
+// ═══════════════════════════════════
+load();
+applyTheme(cfg.theme);
+applyBg();
+renderAll();
+renderSettingsProfile();
+</script>
+</body>
+</html>
