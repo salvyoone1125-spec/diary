@@ -405,8 +405,8 @@ function load(){
   if(!cfg.theme)cfg.theme='blue';
 }
 function saveE(){
-  try{localStorage.setItem(EK,JSON.stringify(entries));}
-  catch(e){snack('⚠️ 保存容量が不足しています。古い画像付き投稿を削除してください。');}
+  try{localStorage.setItem(EK,JSON.stringify(entries));return true;}
+  catch(e){return false;}
 }
 function saveC(){localStorage.setItem(SK,JSON.stringify(cfg))}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
@@ -446,7 +446,6 @@ function toJST(date,time,secs){
 function addEntry(date,time,content,images,tags){
   const iso=toJST(date,time);
   entries.unshift({id:gid(),content,images,tags,timestamp:iso,date});
-  saveE();
 }
 function updateEntry(id,date,time,content,images,tags){
   const i=entries.findIndex(e=>e.id===id);
@@ -457,7 +456,6 @@ function updateEntry(id,date,time,content,images,tags){
     const iso=origDT===newDT?orig:toJST(date,time,0);
     entries[i]={...entries[i],content,images,tags,timestamp:iso,date};
   }
-  saveE();
 }
 function delEntry(id){entries=entries.filter(e=>e.id!==id);saveE()}
 function byDate(d){return entries.filter(e=>e.date===d).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp))}
@@ -725,11 +723,17 @@ function submitEntry(){
   const time=document.getElementById('eTime').value||'00:00';
   const txt=document.getElementById('eTxt').value.trim();
   if(!txt&&!eImgs.length){snack('内容を入力してください');return}
+  const snap=JSON.parse(JSON.stringify(entries)); // ロールバック用スナップショット
   if(editId)updateEntry(editId,date,time,txt,[...eImgs],[...eTags]);
   else addEntry(date,time,txt,[...eImgs],[...eTags]);
+  if(!saveE()){
+    entries=snap; // 保存失敗 → 元に戻す
+    alert('⚠️ 保存できませんでした\n\n容量が不足しています。\n画像付きの古い投稿を削除してから\nもう一度お試しください。\n\n（入力内容はこのまま残っています）');
+    return; // モーダルは閉じない
+  }
   closeModal('entryModal');
   renderAll();
-  snack(editId?'更新しました':'投稿しました');
+  snack(editId?'更新しました✓':'投稿しました✓');
 }
 
 function doDelete(){
