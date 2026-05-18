@@ -67,7 +67,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .entries{padding:8px 14px calc(var(--nh) + 28px)}
 .erow{display:flex;gap:8px;margin-bottom:14px;align-items:flex-start}
 .etime{font-size:11px;color:var(--ts);min-width:36px;flex-shrink:0;background:#fff;border-radius:10px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.1);align-self:flex-start;margin-top:4px}
-.ebubble{background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
+.ebubble{background:#fff;border-radius:18px;padding:11px 14px;flex:none;width:fit-content;max-width:calc(100% - 52px);font-size:15px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
 .ebubble img{width:100%;border-radius:10px;margin-top:8px;cursor:pointer;display:block}
 .etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .etag{font-size:12px;color:var(--accent);background:var(--accent-light);padding:2px 9px;border-radius:10px}
@@ -138,7 +138,8 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 
 .flbl{font-size:12px;color:var(--ts);margin-bottom:5px;display:block;font-weight:500}
 .fin{width:100%;padding:10px 12px;border:1px solid var(--sep);border-radius:12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp)}
-.fta{width:100%;min-height:90px;border:1px solid var(--sep);border-radius:12px;padding:10px 12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp);resize:none;line-height:1.55}
+.fta{width:auto;min-width:60px;max-width:100%;min-height:48px;border:1px solid var(--sep);border-radius:12px;padding:10px 12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp);resize:none;line-height:1.55;overflow:hidden;box-sizing:border-box}
+#ftaMirror{visibility:hidden;position:fixed;top:-9999px;left:-9999px;white-space:pre;font-size:15px;font-family:-apple-system,sans-serif;padding:10px 12px;pointer-events:none}
 .frow{margin-bottom:12px}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 
@@ -299,7 +300,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
       <div><label class="flbl">日付</label><input class="fin" type="date" id="eDate"></div>
       <div><label class="flbl">時刻</label><input class="fin" type="time" id="eTime"></div>
     </div>
-    <div class="frow"><label class="flbl">内容</label><textarea class="fta" id="eTxt" placeholder="いまどうしてる？"></textarea></div>
+    <div class="frow"><label class="flbl">内容</label><textarea class="fta" id="eTxt" placeholder="いまどうしてる？" oninput="autoResize(this)"></textarea></div>
     <div class="frow">
       <label class="flbl">画像</label>
       <div class="imgprevs" id="ePrevs"></div>
@@ -435,39 +436,56 @@ async function compress(dataUrl){
 // ═══════════════════════════════════
 // CRUD
 // ═══════════════════════════════════
+function toJST(date,time,secs){
+  const s=secs!==undefined?secs:new Date().getSeconds();
+  return`${date}T${time}:${String(s).padStart(2,'0')}+09:00`;
+}
 function addEntry(date,time,content,images,tags){
-  const iso=new Date(date+'T'+time+':00').toISOString();
+  const iso=toJST(date,time);
   entries.unshift({id:gid(),content,images,tags,timestamp:iso,date});
   saveE();
 }
 function updateEntry(id,date,time,content,images,tags){
-  const iso=new Date(date+'T'+time+':00').toISOString();
   const i=entries.findIndex(e=>e.id===id);
-  if(i>-1)entries[i]={...entries[i],content,images,tags,timestamp:iso,date};
+  if(i>-1){
+    const orig=entries[i].timestamp;
+    const origDT=orig.substring(0,16);
+    const newDT=`${date}T${time}`;
+    const iso=origDT===newDT?orig:toJST(date,time,0);
+    entries[i]={...entries[i],content,images,tags,timestamp:iso,date};
+  }
   saveE();
 }
 function delEntry(id){entries=entries.filter(e=>e.id!==id);saveE()}
-function byDate(d){return entries.filter(e=>e.date===d).sort((a,b)=>a.timestamp.localeCompare(b.timestamp))}
+function byDate(d){return entries.filter(e=>e.date===d).sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp))}
 function allTags(){const s=new Set();entries.forEach(e=>e.tags.forEach(t=>s.add(t)));return[...s]}
 function allImgs(){const a=[];entries.forEach(e=>e.images.forEach(src=>a.push({src,ts:e.timestamp})));return a.sort((a,b)=>b.ts.localeCompare(a.ts))}
 
 // ═══════════════════════════════════
 // RENDER ENTRIES
 // ═══════════════════════════════════
+function ytId(url){const m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|v\/|shorts\/))([a-zA-Z0-9_-]{11})/);return m?m[1]:null}
+
 function entryHTML(e){
   const imgs=e.images.map(s=>`<img src="${s}" loading="lazy" onclick="openImg(this.src);event.stopPropagation()">`).join('');
   const tags=e.tags.length?`<div class="etags">${e.tags.map(t=>`<span class="etag">${esc(t)}</span>`).join('')}</div>`:'';
   let txt=esc(e.content||'');
   txt=txt.replace(/\n/g,'<br>');
-  txt=txt.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">$1</a>');
-  return`<div class="erow" id="e${e.id}"><div class="etime">${fmtT(e.timestamp)}</div><div class="ebubble" onclick='openEdit("${e.id}")'>${txt?`<div>${txt}</div>`:''}${imgs}${tags}</div></div>`;
+  const ytPreviews=[];
+  txt=txt.replace(/(https?:\/\/[^\s<]+)/g,(url)=>{
+    const vid=ytId(url);
+    if(vid)ytPreviews.push(`<a href="${url}" target="_blank" rel="noopener" style="display:block;margin-top:6px;border-radius:10px;overflow:hidden;text-decoration:none"><img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" style="width:100%;display:block;border-radius:10px"></a>`);
+    return`<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">${url}</a>`;
+  });
+  const ytHTML=ytPreviews.join('');
+  return`<div class="erow" id="e${e.id}"><div class="etime">${fmtT(e.timestamp)}</div><div class="ebubble" onclick='openEdit("${e.id}")'>${txt?`<div>${txt}</div>`:''}${ytHTML}${imgs}${tags}</div></div>`;
 }
 
 function renderGrouped(list,cid){
   const c=document.getElementById(cid);
   if(!list.length){c.innerHTML='<div class="empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="#ccc"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg><p>投稿がありません</p></div>';return}
   const g={};list.forEach(e=>{(g[e.date]||(g[e.date]=[])).push(e)});
-  c.innerHTML=Object.keys(g).sort((a,b)=>b.localeCompare(a)).map(d=>`<div class="dsep">${fmtD(d)}</div>`+g[d].sort((a,b)=>a.timestamp.localeCompare(b.timestamp)).map(entryHTML).join('')).join('');
+  c.innerHTML=Object.keys(g).sort((a,b)=>b.localeCompare(a)).map(d=>`<div class="dsep">${fmtD(d)}</div>`+g[d].sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp)).map(entryHTML).join('')).join('');
 }
 
 // ═══════════════════════════════════
@@ -678,6 +696,19 @@ function openNew(){
   setTimeout(()=>document.getElementById('eTxt').focus(),150);
 }
 
+function autoResize(el){
+  const m=document.getElementById('ftaMirror');
+  if(m){
+    const lines=(el.value||'').split('\n');
+    const longest=lines.reduce((a,b)=>a.length>b.length?a:b,'');
+    m.textContent=longest||(el.getAttribute('placeholder')||'');
+    const maxW=el.closest('.frow')?el.closest('.frow').offsetWidth:el.parentElement.offsetWidth;
+    el.style.width=Math.max(60,Math.min(m.scrollWidth+2,maxW))+'px';
+  }
+  el.style.height='auto';
+  el.style.height=el.scrollHeight+'px';
+}
+
 function openEdit(id){
   const e=entries.find(x=>x.id===id);if(!e)return;
   editId=id;
@@ -685,11 +716,13 @@ function openEdit(id){
   eTags=[...e.tags];
   document.getElementById('entryModalTitle').textContent='投稿を編集';
   document.getElementById('eDelBtn').style.display='block';
-  document.getElementById('eTxt').value=e.content||'';
+  const ta=document.getElementById('eTxt');
+  ta.value=e.content||'';
   document.getElementById('eDate').value=e.date;
   document.getElementById('eTime').value=fmtT(e.timestamp);
   renderEPrevs();renderETags();filterSuggs('');
   document.getElementById('entryModal').classList.remove('hide');
+  setTimeout(()=>autoResize(ta),0);
 }
 
 function submitEntry(){
@@ -876,5 +909,6 @@ renderAll();
 renderSettingsProfile();
 initSwipe();
 </script>
+<span id="ftaMirror"></span>
 </body>
 </html>
