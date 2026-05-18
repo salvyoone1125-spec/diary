@@ -33,14 +33,29 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .hd-btn svg{width:20px;height:20px;fill:var(--ts)}
 .hd-btn:active{background:var(--bg)}
 
-.week-row{display:flex;justify-content:space-between;padding:2px 16px 10px}
-.wday{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-width:40px}
+/* ── Calendar (shared) ── */
+.cal-grid{padding:2px 8px 8px}
+.cal-grid.mode-month{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-grid.mode-week{display:flex;justify-content:space-between;padding:2px 10px 10px}
+/* Month mode cells */
+.cal-dn{text-align:center;font-size:11px;color:var(--ts);padding:2px 0 5px;font-weight:500}
+.cal-cell{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0}
+.cal-num{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;border-radius:50%}
+.cal-num.today{background:var(--accent);color:#fff}
+.cal-num.sel:not(.today){background:var(--accent-light);color:var(--accent);font-weight:700}
+.cal-num.other{color:#C7C7CC}
+.cal-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}
+.cal-mt{height:5px}
+/* Week mode cells */
+.wday{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1}
 .wday-n{font-size:12px;color:var(--ts)}
-.wday-d{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;border-radius:50%}
+.wday-d{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;border-radius:50%}
 .wday-d.today{background:var(--accent);color:#fff}
 .wday-d.sel:not(.today){background:var(--accent-light);color:var(--accent);font-weight:700}
 .wday-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}
 .wday-empty{height:5px}
+/* Cal toggle button */
+.cal-toggle{background:none;border:1.5px solid var(--accent);color:var(--accent);border-radius:10px;padding:2px 7px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);line-height:1.4}
 
 /* ── Tabs ── */
 .tab{display:none}
@@ -49,10 +64,10 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 #tTags,#tPhotos,#tSearch,#tSettings{background:var(--bg);min-height:100%}
 
 /* ── Entries ── */
-.entries{padding:8px 14px 20px}
+.entries{padding:8px 14px calc(var(--nh) + 28px)}
 .erow{display:flex;gap:8px;margin-bottom:14px;align-items:flex-start}
 .etime{font-size:11px;color:var(--ts);min-width:36px;flex-shrink:0;background:#fff;border-radius:10px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.1);align-self:flex-start;margin-top:4px}
-.ebubble{background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word}
+.ebubble{background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
 .ebubble img{width:100%;border-radius:10px;margin-top:8px;cursor:pointer;display:block}
 .etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .etag{font-size:12px;color:var(--accent);background:var(--accent-light);padding:2px 9px;border-radius:10px}
@@ -116,7 +131,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 /* ── Modals ── */
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:flex-end;justify-content:center}
 .mbg.hide{display:none}
-.msheet{background:#fff;border-radius:24px 24px 0 0;padding:14px 20px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.msheet{background:#fff;border-radius:24px 24px 0 0;padding:14px 14px 40px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
 .mhandle{width:36px;height:4px;background:var(--sep);border-radius:2px;margin:0 auto 16px}
 .mtitle{font-size:17px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
 .mx-btn{background:var(--bg);border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ts);flex-shrink:0}
@@ -186,12 +201,13 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
         <div class="hd-row">
           <div class="hd-date" id="hdDate"></div>
           <div class="hd-btns">
-            <button class="hd-btn" onclick="prevWeek()"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg></button>
+            <button class="hd-btn" onclick="prevNav()"><svg viewBox="0 0 24 24"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6z"/></svg></button>
             <button class="hd-btn" onclick="goToday()"><svg viewBox="0 0 24 24"><path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z"/></svg></button>
-            <button class="hd-btn" onclick="nextWeek()"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
+            <button class="cal-toggle" id="calToggleBtn" onclick="toggleCalMode()">月</button>
+            <button class="hd-btn" onclick="nextNav()"><svg viewBox="0 0 24 24"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></button>
           </div>
         </div>
-        <div class="week-row" id="weekRow"></div>
+        <div class="cal-grid" id="calGrid"></div>
       </div>
       <div class="entries" id="homeEntries"></div>
     </div>
@@ -380,6 +396,7 @@ const EK = 'diary_v3', SK = 'diary_s3';
 let entries=[], cfg={theme:'blue'};
 let selDate=new Date(), selTag='all';
 let eImgs=[], eTags=[], editId=null;
+let calMode='week';
 
 function load(){
   try{entries=JSON.parse(localStorage.getItem(EK)||'[]')}catch{entries=[]}
@@ -438,11 +455,12 @@ function allImgs(){const a=[];entries.forEach(e=>e.images.forEach(src=>a.push({s
 // RENDER ENTRIES
 // ═══════════════════════════════════
 function entryHTML(e){
-  const imgs=e.images.map(s=>`<img src="${s}" loading="lazy" onclick="openImg(this.src)">`).join('');
+  const imgs=e.images.map(s=>`<img src="${s}" loading="lazy" onclick="openImg(this.src);event.stopPropagation()">`).join('');
   const tags=e.tags.length?`<div class="etags">${e.tags.map(t=>`<span class="etag">${esc(t)}</span>`).join('')}</div>`:'';
   let txt=esc(e.content||'');
-  txt=txt.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">$1</a>');
-  return`<div class="erow" id="e${e.id}"><div class="etime">${fmtT(e.timestamp)}</div><div class="ebubble">${txt?`<div>${txt}</div>`:''}${imgs}${tags}<div class="ebtns"><button class="ebtn" onclick='openEdit("${e.id}")'>編集</button><button class="ebtn del" onclick='askDel("${e.id}")'>削除</button></div></div></div>`;
+  txt=txt.replace(/\n/g,'<br>');
+  txt=txt.replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">$1</a>');
+  return`<div class="erow" id="e${e.id}"><div class="etime">${fmtT(e.timestamp)}</div><div class="ebubble" onclick='openEdit("${e.id}")'>${txt?`<div>${txt}</div>`:''}${imgs}${tags}</div></div>`;
 }
 
 function renderGrouped(list,cid){
@@ -456,30 +474,90 @@ function renderGrouped(list,cid){
 // HOME TAB
 // ═══════════════════════════════════
 function renderHome(){
-  document.getElementById('hdDate').textContent=fmtDJP(selDate);
-  renderWeek();
+  const cg=document.getElementById('calGrid');
+  const btn=document.getElementById('calToggleBtn');
+  if(calMode==='week'){
+    cg.className='cal-grid mode-week';
+    btn.textContent='月';
+    renderWeek();
+  } else {
+    cg.className='cal-grid mode-month';
+    btn.textContent='週';
+    renderCalendar();
+  }
   const sd=ds(selDate), list=byDate(sd), c=document.getElementById('homeEntries');
   if(!list.length){c.innerHTML='<div class="empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="#ccc"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg><p>この日の投稿はまだありません<br><span style="font-size:12px">＋ボタンで追加できます</span></p></div>'}
   else c.innerHTML=list.map(entryHTML).join('');
 }
 
 function renderWeek(){
-  // 週はselDateを含む週を表示（常に一致）
+  document.getElementById('hdDate').textContent=fmtDJP(selDate);
   const mon=new Date(selDate);
   mon.setDate(mon.getDate()-((mon.getDay()+6)%7));
   mon.setHours(0,0,0,0);
-  const today=ds(new Date()), sel=ds(selDate);
-  document.getElementById('weekRow').innerHTML=['月','火','水','木','金','土','日'].map((_,i)=>{
+  const today=ds(new Date()),sel=ds(selDate);
+  document.getElementById('calGrid').innerHTML=['月','火','水','木','金','土','日'].map((_,i)=>{
     const d=new Date(mon);d.setDate(mon.getDate()+i);const s=ds(d);
     const isT=s===today,isS=s===sel,hasDot=entries.some(e=>e.date===s);
     return`<div class="wday" onclick="pickDay('${s}')"><div class="wday-n">${_}</div><div class="wday-d${isT?' today':isS?' sel':''}">${d.getDate()}</div><div class="${hasDot&&!isT?'wday-dot':'wday-empty'}"></div></div>`;
   }).join('');
 }
 
+function renderCalendar(){
+  const y=selDate.getFullYear(),m=selDate.getMonth();
+  document.getElementById('hdDate').textContent=`${y}年${m+1}月`;
+  const first=new Date(y,m,1),last=new Date(y,m+1,0);
+  const startDow=(first.getDay()+6)%7;
+  const today=ds(new Date()),sel=ds(selDate);
+  let html=['月','火','水','木','金','土','日'].map(n=>`<div class="cal-dn">${n}</div>`).join('');
+  const prevLast=new Date(y,m,0).getDate();
+  for(let i=0;i<startDow;i++){
+    const day=prevLast-startDow+i+1;
+    const date=ds(new Date(y,m-1,day));
+    html+=`<div class="cal-cell" onclick="pickDay('${date}')"><div class="cal-num other">${day}</div><div class="cal-mt"></div></div>`;
+  }
+  for(let d=1;d<=last.getDate();d++){
+    const date=ds(new Date(y,m,d));
+    const isT=date===today,isS=date===sel;
+    const hasDot=entries.some(e=>e.date===date);
+    html+=`<div class="cal-cell" onclick="pickDay('${date}')"><div class="cal-num${isT?' today':isS?' sel':''}">${d}</div><div class="${hasDot&&!isT?'cal-dot':'cal-mt'}"></div></div>`;
+  }
+  const total=startDow+last.getDate(),rem=total%7===0?0:7-(total%7);
+  for(let i=1;i<=rem;i++){
+    const date=ds(new Date(y,m+1,i));
+    html+=`<div class="cal-cell" onclick="pickDay('${date}')"><div class="cal-num other">${i}</div><div class="cal-mt"></div></div>`;
+  }
+  document.getElementById('calGrid').innerHTML=html;
+}
+
 function pickDay(s){selDate=new Date(s+'T12:00:00');renderHome();}
-function prevWeek(){selDate=new Date(selDate);selDate.setDate(selDate.getDate()-7);renderHome();}
-function nextWeek(){selDate=new Date(selDate);selDate.setDate(selDate.getDate()+7);renderHome();}
+function toggleCalMode(){calMode=calMode==='week'?'month':'week';renderHome();}
+function prevNav(){
+  if(calMode==='week'){selDate=new Date(selDate);selDate.setDate(selDate.getDate()-7);}
+  else{selDate=new Date(selDate.getFullYear(),selDate.getMonth()-1,1);}
+  renderHome();
+}
+function nextNav(){
+  if(calMode==='week'){selDate=new Date(selDate);selDate.setDate(selDate.getDate()+7);}
+  else{selDate=new Date(selDate.getFullYear(),selDate.getMonth()+1,1);}
+  renderHome();
+}
 function goToday(){selDate=new Date();renderAll();}
+
+let swX=0,swY=0;
+function initSwipe(){
+  const el=document.getElementById('scr');
+  el.addEventListener('touchstart',e=>{swX=e.touches[0].clientX;swY=e.touches[0].clientY},{passive:true});
+  el.addEventListener('touchend',e=>{
+    if(curTab!=='Home')return;
+    const dx=e.changedTouches[0].clientX-swX;
+    const dy=e.changedTouches[0].clientY-swY;
+    if(Math.abs(dx)>Math.abs(dy)*1.5&&Math.abs(dx)>50){
+      const d=new Date(selDate);d.setDate(d.getDate()+(dx>0?-1:1));
+      selDate=d;renderHome();
+    }
+  },{passive:true});
+}
 
 // ═══════════════════════════════════
 // TAGS TAB
@@ -796,6 +874,7 @@ applyTheme(cfg.theme);
 applyBg();
 renderAll();
 renderSettingsProfile();
+initSwipe();
 </script>
 </body>
 </html>
