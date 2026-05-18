@@ -138,7 +138,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 
 .flbl{font-size:12px;color:var(--ts);margin-bottom:5px;display:block;font-weight:500}
 .fin{width:100%;padding:10px 12px;border:1px solid var(--sep);border-radius:12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp)}
-.fta{width:auto;min-width:60px;max-width:100%;min-height:48px;border:1px solid var(--sep);border-radius:12px;padding:10px 12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp);resize:none;line-height:1.55;overflow:hidden;box-sizing:border-box}
+.fta{width:100%;min-height:48px;border:1px solid var(--sep);border-radius:12px;padding:10px 12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp);resize:none;line-height:1.55;overflow:hidden;box-sizing:border-box}
 #ftaMirror{visibility:hidden;position:fixed;top:-9999px;left:-9999px;white-space:pre;font-size:15px;font-family:-apple-system,sans-serif;padding:10px 12px;pointer-events:none}
 .frow{margin-bottom:12px}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
@@ -404,7 +404,10 @@ function load(){
   try{cfg=JSON.parse(localStorage.getItem(SK)||'{}')}catch{cfg={}}
   if(!cfg.theme)cfg.theme='blue';
 }
-function saveE(){localStorage.setItem(EK,JSON.stringify(entries))}
+function saveE(){
+  try{localStorage.setItem(EK,JSON.stringify(entries));}
+  catch(e){snack('⚠️ 保存容量が不足しています。古い画像付き投稿を削除してください。');}
+}
 function saveC(){localStorage.setItem(SK,JSON.stringify(cfg))}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function ds(d){
@@ -697,14 +700,6 @@ function openNew(){
 }
 
 function autoResize(el){
-  const m=document.getElementById('ftaMirror');
-  if(m){
-    const lines=(el.value||'').split('\n');
-    const longest=lines.reduce((a,b)=>a.length>b.length?a:b,'');
-    m.textContent=longest||(el.getAttribute('placeholder')||'');
-    const maxW=el.closest('.frow')?el.closest('.frow').offsetWidth:el.parentElement.offsetWidth;
-    el.style.width=Math.max(60,Math.min(m.scrollWidth+2,maxW))+'px';
-  }
   el.style.height='auto';
   el.style.height=el.scrollHeight+'px';
 }
