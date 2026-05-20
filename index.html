@@ -37,6 +37,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .cal-grid{padding:2px 8px 8px}
 .cal-grid.mode-month{display:grid;grid-template-columns:repeat(7,1fr)}
 .cal-grid.mode-week{display:flex;justify-content:space-between;padding:2px 10px 10px}
+/* Month mode cells */
 .cal-dn{text-align:center;font-size:11px;color:var(--ts);padding:2px 0 5px;font-weight:500}
 .cal-cell{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:2px 0}
 .cal-num{width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;border-radius:50%}
@@ -45,6 +46,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .cal-num.other{color:#C7C7CC}
 .cal-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}
 .cal-mt{height:5px}
+/* Week mode cells */
 .wday{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex:1}
 .wday-n{font-size:12px;color:var(--ts)}
 .wday-d{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:500;border-radius:50%}
@@ -52,6 +54,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .wday-d.sel:not(.today){background:var(--accent-light);color:var(--accent);font-weight:700}
 .wday-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}
 .wday-empty{height:5px}
+/* Cal toggle button */
 .cal-toggle{background:none;border:1.5px solid var(--accent);color:var(--accent);border-radius:10px;padding:2px 7px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);line-height:1.4}
 
 /* ── Tabs ── */
@@ -63,9 +66,9 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 /* ── Entries ── */
 .entries{padding:8px 14px calc(var(--nh) + 28px)}
 .erow{display:flex;gap:8px;margin-bottom:14px;align-items:flex-start}
-.etime{font-size:11px;color:var(--ts);min-width:36px;flex-shrink:0;background:#fff;border-radius:10px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.1);align-self:flex-start;margin-top:4px}
-.ebubble{background:#fff;border-radius:18px;padding:11px 14px;flex:none;width:fit-content;max-width:calc(100% - 52px);font-size:15px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
-.ebubble img{width:100%;border-radius:10px;margin-top:8px;cursor:pointer;display:block}
+.etime{font-size:14px;color:var(--ts);min-width:36px;flex-shrink:0;background:#fff;border-radius:4px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.1);align-self:flex-start;margin-top:4px}
+.ebubble{background:#fff;border-radius:8px;padding:11px 14px;flex:none;width:fit-content;max-width:calc(100% - 52px);font-size:17px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
+.ebubble img{width:100%;border-radius:8px;margin-top:8px;cursor:pointer;display:block}
 .etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .etag{font-size:12px;color:var(--accent);background:var(--accent-light);padding:2px 9px;border-radius:10px}
 .ebtns{display:flex;gap:4px;margin-top:7px;justify-content:flex-end}
@@ -136,6 +139,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .flbl{font-size:12px;color:var(--ts);margin-bottom:5px;display:block;font-weight:500}
 .fin{width:100%;padding:10px 12px;border:1px solid var(--sep);border-radius:12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp)}
 .fta{width:100%;min-height:48px;border:1px solid var(--sep);border-radius:12px;padding:10px 12px;font-size:15px;font-family:var(--font);outline:none;background:var(--bg);color:var(--tp);resize:none;line-height:1.55;overflow:hidden;box-sizing:border-box}
+#ftaMirror{visibility:hidden;position:fixed;top:-9999px;left:-9999px;white-space:pre;font-size:15px;font-family:-apple-system,sans-serif;padding:10px 12px;pointer-events:none}
 .frow{margin-bottom:12px}
 .f2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 
@@ -143,7 +147,6 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .iprev{position:relative;width:76px;height:76px}
 .iprev img{width:100%;height:100%;object-fit:cover;border-radius:10px}
 .iprev-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;background:#FF3B30;color:#fff;border:none;border-radius:50%;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.iprev-loading{position:absolute;inset:0;background:rgba(0,0,0,.4);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px}
 
 .add-img-lbl{display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px dashed var(--sep);border-radius:12px;cursor:pointer;color:var(--ts);font-size:13px;margin-bottom:10px;font-family:var(--font)}
 .add-img-lbl svg{width:18px;height:18px;fill:var(--ts);flex-shrink:0}
@@ -187,13 +190,11 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 .empty p{font-size:14px;margin-top:10px}
 .snack{position:fixed;bottom:calc(var(--nh)+16px);left:50%;transform:translateX(-50%);background:rgba(28,28,30,.9);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:400;opacity:0;pointer-events:none;transition:opacity .3s;white-space:nowrap}
 .snack.on{opacity:1}
-
-/* ── Upload progress overlay ── */
-.upload-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.upload-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .upload-overlay.hide{display:none}
-.upload-spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
-.upload-msg{color:#fff;font-size:15px;font-weight:500}
+.upload-spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.upload-msg{color:#fff;font-size:15px;font-weight:500}
 </style>
 </head>
 <body>
@@ -287,7 +288,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
   <nav class="nav">
     <div class="ni on" id="nHome" onclick="goTab('Home')"><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7zm0 4h7v2H7z"/></svg></div>
     <div class="ni" id="nTags" onclick="goTab('Tags')"><span class="hash">#</span></div>
-    <div class="ni" id="nPhotos" onclick="goTab('Photos')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg></div>
+    <div class="ni" id="nPhotos" onclick="goTab('Photos')"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></div>
     <div class="ni" id="nSearch" onclick="goTab('Search')"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg></div>
     <div class="ni" id="nSettings" onclick="goTab('Settings')"><svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.22-.07.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></div>
   </nav>
@@ -360,16 +361,16 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
   <img id="ifsImg" src="" alt="">
 </div>
 
+<div class="snack" id="snack"></div>
+
 <!-- UPLOAD OVERLAY -->
 <div class="upload-overlay hide" id="uploadOverlay">
   <div class="upload-spinner"></div>
   <div class="upload-msg" id="uploadMsg">写真をアップロード中…</div>
 </div>
 
-<div class="snack" id="snack"></div>
-
 <!-- FILE INPUTS -->
-<input type="file" id="imgIn" accept="image/*" multiple style="display:none" onchange="handleImgs(this)">
+<input type="file" id="imgIn" accept="image/*" multiple style="display:none" onchange="handleImgs(this,false)">
 <input type="file" id="bgIn" accept="image/*" style="display:none" onchange="handleBgImg(this)">
 <input type="file" id="importIn" accept=".json" style="display:none" onchange="importJSON(this)">
 
@@ -383,19 +384,14 @@ const UPLOAD_PRESET = 'diary_upload';
 async function uploadToCloudinary(file, index, total) {
   const msg = document.getElementById('uploadMsg');
   if (msg) msg.textContent = `写真をアップロード中… (${index}/${total})`;
-
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', UPLOAD_PRESET);
-
   const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-    method: 'POST',
-    body: formData
+    method: 'POST', body: formData
   });
-
   if (!res.ok) throw new Error('Upload failed');
   const data = await res.json();
-  // 最適化URL（自動フォーマット・品質調整）を返す
   return data.secure_url.replace('/upload/', '/upload/f_auto,q_auto/');
 }
 
@@ -443,7 +439,10 @@ function saveE(){
   try{localStorage.setItem(EK,JSON.stringify(entries));return true;}
   catch(e){return false;}
 }
-function saveC(){localStorage.setItem(SK,JSON.stringify(cfg))}
+function saveC(){
+  try{localStorage.setItem(SK,JSON.stringify(cfg));}
+  catch(e){snack('⚠️ 設定の保存に失敗しました（容量不足）');}
+}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).slice(2)}
 function ds(d){
   if(!(d instanceof Date))return d;
@@ -495,7 +494,7 @@ function entryHTML(e){
   const ytPreviews=[];
   txt=txt.replace(/(https?:\/\/[^\s<]+)/g,(url)=>{
     const vid=ytId(url);
-    if(vid)ytPreviews.push(`<a href="${url}" target="_blank" rel="noopener" style="display:block;margin-top:6px;border-radius:10px;overflow:hidden;text-decoration:none"><img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" style="width:100%;display:block;border-radius:10px"></a>`);
+    if(vid)ytPreviews.push(`<a href="${url}" target="_blank" rel="noopener" style="display:block;margin-top:6px;border-radius:8px;overflow:hidden;text-decoration:none"><img src="https://img.youtube.com/vi/${vid}/mqdefault.jpg" style="width:100%;display:block;border-radius:8px"></a>`);
     return`<a href="${url}" target="_blank" rel="noopener" style="color:var(--accent);word-break:break-all">${url}</a>`;
   });
   const ytHTML=ytPreviews.join('');
@@ -645,6 +644,7 @@ function renderSettingsProfile(){
   const pi=document.getElementById('profImg');
   if(cfg.bgImg)pi.innerHTML=`<img src="${cfg.bgImg}" alt="">`;
   else pi.innerHTML=`<svg width="44" height="44" viewBox="0 0 24 24" fill="#C7C7CC"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>`;
+  // update swatch
   const th=THEMES.find(t=>t.id===cfg.theme)||THEMES[0];
   const sw=document.getElementById('sSwatch');
   sw.innerHTML=th.q.map(c=>`<div style="background:${c}"></div>`).join('');
@@ -737,15 +737,19 @@ function openEdit(id){
   setTimeout(()=>autoResize(ta),0);
 }
 
-async function submitEntry(){
+function submitEntry(){
   const date=document.getElementById('eDate').value;
   const time=document.getElementById('eTime').value||'00:00';
   const txt=document.getElementById('eTxt').value.trim();
   if(!txt&&!eImgs.length){snack('内容を入力してください');return}
-
+  const snap=JSON.parse(JSON.stringify(entries)); // ロールバック用スナップショット
   if(editId)updateEntry(editId,date,time,txt,[...eImgs],[...eTags]);
   else addEntry(date,time,txt,[...eImgs],[...eTags]);
-  saveE();
+  if(!saveE()){
+    entries=snap; // 保存失敗 → 元に戻す
+    alert('⚠️ 保存できませんでした\n\n容量が不足しています。\n画像付きの古い投稿を削除してから\nもう一度お試しください。\n\n（入力内容はこのまま残っています）');
+    return; // モーダルは閉じない
+  }
   closeModal('entryModal');
   renderAll();
   snack(editId?'更新しました✓':'投稿しました✓');
@@ -758,36 +762,36 @@ function doDelete(){
   snack('削除しました');
 }
 
-// ═══════════════════════════════════
-// IMAGE HANDLING (Cloudinary)
-// ═══════════════════════════════════
-async function handleImgs(input) {
-  const files = [...input.files];
-  if (!files.length) return;
+function askDel(id){
+  if(confirm('この投稿を削除しますか？')){delEntry(id);renderAll();snack('削除しました')}
+}
 
-  // アップロードオーバーレイ表示
-  const overlay = document.getElementById('uploadOverlay');
+// ═══════════════════════════════════
+// IMAGE HANDLING
+// ═══════════════════════════════════
+async function handleImgs(input){
+  const files=[...input.files];
+  if(!files.length)return;
+  const overlay=document.getElementById('uploadOverlay');
   overlay.classList.remove('hide');
-
-  try {
-    for (let i = 0; i < files.length; i++) {
-      const url = await uploadToCloudinary(files[i], i + 1, files.length);
+  try{
+    for(let i=0;i<files.length;i++){
+      const url=await uploadToCloudinary(files[i],i+1,files.length);
       eImgs.push(url);
       renderEPrevs();
     }
     snack(`${files.length}枚アップロードしました✓`);
-  } catch (err) {
+  }catch(err){
     console.error(err);
     snack('アップロードに失敗しました。もう一度お試しください');
-  } finally {
+  }finally{
     overlay.classList.add('hide');
   }
-
-  input.value = '';
+  input.value='';
 }
 
 function renderEPrevs(){
-  document.getElementById('ePrevs').innerHTML=eImgs.map((s,i)=>`<div class="iprev"><img src="${s}" loading="lazy"><button class="iprev-del" onclick="rmEImg(${i})">✕</button></div>`).join('');
+  document.getElementById('ePrevs').innerHTML=eImgs.map((s,i)=>`<div class="iprev"><img src="${s}"><button class="iprev-del" onclick="rmEImg(${i})">✕</button></div>`).join('');
 }
 function rmEImg(i){eImgs.splice(i,1);renderEPrevs()}
 
@@ -796,12 +800,17 @@ function openImg(src){document.getElementById('ifsImg').src=src;document.getElem
 // ═══════════════════════════════════
 // TAG HANDLING
 // ═══════════════════════════════════
+function addTagFromInput(){
+  const el=document.getElementById('eTagIn');
+  if(!el)return;
+  const v=el.value.trim().replace(/,/g,'');
+  if(v&&!eTags.includes(v)){eTags.push(v);renderETags();filterSuggs('');}
+  else el.value='';
+}
 function addTag(evt){
-  if(evt.key==='Enter'||evt.key===','){
+  if(evt.key==='Enter'||evt.key===','||evt.key==='\n'){
     evt.preventDefault();
-    const v=evt.target.value.trim().replace(/,/g,'');
-    if(v&&!eTags.includes(v)){eTags.push(v);renderETags();filterSuggs('');}
-    evt.target.value='';
+    addTagFromInput();
   }
 }
 function addTagByName(t){
@@ -811,7 +820,7 @@ function rmETag(i){eTags.splice(i,1);renderETags();filterSuggs('');}
 function renderETags(){
   document.getElementById('eTagRow').innerHTML=
     eTags.map((t,i)=>`<span class="rtag">${esc(t)}<button onclick="rmETag(${i})">✕</button></span>`).join('')+
-    `<input class="tagin" id="eTagIn" placeholder="タグを追加… (Enter)" onkeydown="addTag(event)" oninput="filterSuggs(this.value)">`;
+    `<input class="tagin" id="eTagIn" placeholder="タグを追加…" onkeydown="addTag(event)" oninput="filterSuggs(this.value)"><button type="button" onclick="addTagFromInput()" style="background:var(--accent);color:#fff;border:none;border-radius:20px;padding:4px 10px;font-size:13px;cursor:pointer;margin-left:4px;font-family:var(--font)">＋</button>`;
 }
 function filterSuggs(q){
   const wrap=document.getElementById('tagSuggWrap');
@@ -825,35 +834,29 @@ function filterSuggs(q){
 }
 
 // ═══════════════════════════════════
-// BACKGROUND IMAGE（設定画面の背景はローカルのまま）
+// BACKGROUND IMAGE
 // ═══════════════════════════════════
 async function handleBgImg(input){
   const f=input.files[0];if(!f)return;
-  const raw=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(f)});
-  // 背景画像は軽量化してローカルに保存
-  const c=await compress(raw);
-  cfg.bgImg=c;saveC();applyBg();renderSettingsProfile();snack('背景画像を設定しました');
+  const overlay=document.getElementById('uploadOverlay');
+  const msg=document.getElementById('uploadMsg');
+  if(msg)msg.textContent='背景画像をアップロード中…';
+  overlay.classList.remove('hide');
+  try{
+    const url=await uploadToCloudinary(f,1,1);
+    cfg.bgImg=url;saveC();applyBg();renderSettingsProfile();snack('背景画像を設定しました');
+  }catch(err){
+    console.error(err);
+    snack('⚠️ アップロードに失敗しました。もう一度お試しください');
+  }finally{
+    overlay.classList.add('hide');
+  }
   input.value='';
 }
 function clearBg(){delete cfg.bgImg;saveC();applyBg();renderSettingsProfile();snack('背景画像をリセットしました')}
 function applyBg(){
   if(cfg.bgImg){document.body.style.backgroundImage=`url(${cfg.bgImg})`;document.body.classList.add('has-bg')}
   else{document.body.style.backgroundImage='';document.body.classList.remove('has-bg')}
-}
-
-// 背景用だけcompressを残す
-async function compress(dataUrl){
-  return new Promise(r=>{
-    const img=new Image();
-    img.onload=()=>{
-      let w=img.width,h=img.height,M=1200;
-      if(w>M||h>M){if(w>=h){h=Math.round(h*M/w);w=M}else{w=Math.round(w*M/h);h=M}}
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      r(c.toDataURL('image/jpeg',.78));
-    };
-    img.src=dataUrl;
-  });
 }
 
 // ═══════════════════════════════════
@@ -871,16 +874,7 @@ async function exportPDF(){
     if(x.date!==cd){cd=x.date;if(y>20)y+=6;doc.setFontSize(13);doc.setTextColor(91,184,184);doc.text(fmtD(x.date),14,y);y+=6;doc.setDrawColor(91,184,184);doc.line(14,y,196,y);y+=6;doc.setTextColor(0,0,0)}
     doc.setFontSize(10);doc.setTextColor(130,130,130);doc.text(fmtT(x.timestamp),14,y);y+=5;
     if(x.content){doc.setFontSize(11);doc.setTextColor(28,28,30);const ls=doc.splitTextToSize(x.content,172);ls.forEach(l=>{if(y>272){doc.addPage();y=16}doc.text(l,14,y);y+=6})}
-    for(const img of x.images){
-      if(y>200){doc.addPage();y=16}
-      try{
-        // CloudinaryのURLから画像を取得してPDFに埋め込む
-        const imgRes=await fetch(img);
-        const blob=await imgRes.blob();
-        const b64=await new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result);fr.readAsDataURL(blob)});
-        doc.addImage(b64,'JPEG',14,y,80,60);y+=64;
-      }catch{y+=4}
-    }
+    for(const img of x.images){if(y>200){doc.addPage();y=16}try{doc.addImage(img,'JPEG',14,y,80,60);y+=64}catch{}}
     if(x.tags.length){doc.setFontSize(9);doc.setTextColor(91,184,184);doc.text(x.tags.map(t=>'#'+t).join('  '),14,y);y+=7}
     y+=4;if(y>272){doc.addPage();y=16}
   }
@@ -897,9 +891,9 @@ async function saveDayImg(){
   const list=byDate(d);if(!list.length){snack('この日の投稿がありません');return}
   const wrap=document.createElement('div');
   Object.assign(wrap.style,{width:'390px',background:getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#F2F2F7',padding:'20px',fontFamily:'-apple-system,sans-serif',position:'absolute',left:'-9999px',top:'0'});
-  wrap.innerHTML=`<div style="font-size:20px;font-weight:700;margin-bottom:16px">${fmtD(d)}</div>`+list.map(e=>`<div style="display:flex;gap:8px;margin-bottom:14px"><div style="font-size:11px;color:#8E8E93;min-width:32px;padding-top:4px">${fmtT(e.timestamp)}</div><div style="background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55">${esc(e.content||'')}${e.images.map(s=>`<img src="${s}" crossorigin="anonymous" style="width:100%;border-radius:10px;margin-top:8px;display:block">`).join('')}${e.tags.length?`<div style="margin-top:7px">${e.tags.map(t=>`<span style="font-size:12px;color:${cfg.accent||'#5BB8B8'};background:#E8F5F5;padding:2px 9px;border-radius:10px;margin-right:4px">${esc(t)}</span>`).join('')}</div>`:''}</div></div>`).join('');
+  wrap.innerHTML=`<div style="font-size:20px;font-weight:700;margin-bottom:16px">${fmtD(d)}</div>`+list.map(e=>`<div style="display:flex;gap:8px;margin-bottom:14px"><div style="font-size:11px;color:#8E8E93;min-width:32px;padding-top:4px">${fmtT(e.timestamp)}</div><div style="background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55">${esc(e.content||'')}${e.images.map(s=>`<img src="${s}" style="width:100%;border-radius:10px;margin-top:8px;display:block">`).join('')}${e.tags.length?`<div style="margin-top:7px">${e.tags.map(t=>`<span style="font-size:12px;color:${cfg.accent||'#5BB8B8'};background:#E8F5F5;padding:2px 9px;border-radius:10px;margin-right:4px">${esc(t)}</span>`).join('')}</div>`:''}</div></div>`).join('');
   document.body.appendChild(wrap);
-  try{const cv=await html2canvas(wrap,{useCORS:true,scale:2,allowTaint:false});const a=document.createElement('a');a.download=`diary_${d}.png`;a.href=cv.toDataURL('image/png');a.click();snack('画像を保存しました')}
+  try{const cv=await html2canvas(wrap,{useCORS:true,scale:2});const a=document.createElement('a');a.download=`diary_${d}.png`;a.href=cv.toDataURL('image/png');a.click();snack('画像を保存しました')}
   catch{snack('画像生成に失敗しました')}
   document.body.removeChild(wrap);closeModal('saveDayModal');
 }
@@ -927,10 +921,11 @@ function importJSON(input){
       const data=JSON.parse(e.target.result);
       if(!Array.isArray(data.entries))throw new Error();
       if(!confirm(`${data.entries.length}件の投稿をインポートします。\n既存のデータと統合されます。よろしいですか？`))return;
+      // IDが重複しないよう既存にないものだけ追加
       const existIds=new Set(entries.map(x=>x.id));
       const added=data.entries.filter(x=>!existIds.has(x.id));
       entries=[...entries,...added];
-      saveE();renderAll();
+      saveE();applyTheme(cfg.theme);renderAll();
       snack(`${added.length}件をインポートしました`);
     }catch{snack('ファイルの読み込みに失敗しました');}
   };
@@ -957,5 +952,6 @@ renderAll();
 renderSettingsProfile();
 initSwipe();
 </script>
+<span id="ftaMirror"></span>
 </body>
 </html>
