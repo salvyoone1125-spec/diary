@@ -76,7 +76,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
 /* ── Entries ── */
 .entries{padding:8px 14px calc(var(--nh) + 28px)}
 .erow{display:flex;gap:8px;margin-bottom:14px;align-items:flex-start}
-.etime{font-size:14px;color:var(--ts);min-width:36px;flex-shrink:0;background:rgba(255,255,255,.92);border-radius:8px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.09);align-self:flex-start;margin-top:4px}
+.etime{font-size:14px;color:var(--tp);min-width:36px;flex-shrink:0;background:rgba(255,255,255,.92);border-radius:8px;padding:4px 7px;line-height:1.2;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.09);align-self:flex-start;margin-top:4px}
 .ebubble{background:rgba(255,255,255,.92);border-radius:8px;padding:11px 14px;flex:none;width:fit-content;max-width:calc(100% - 52px);font-size:17px;line-height:1.55;box-shadow:0 1px 6px rgba(0,0,0,.09);word-break:break-word;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
 .ebubble img{width:100%;border-radius:8px;margin-top:8px;cursor:pointer;display:block}
 .etags{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
@@ -277,7 +277,7 @@ body.has-bg{background-image:var(--bgImg);background-size:cover;background-posit
           <label class="s-row" for="bgIn"><span class="s-ico">🖼️</span><span class="s-txt">背景画像を選択</span><span class="s-arr">›</span></label>
           <div class="s-slider-row" id="bgOpacityRow" style="display:none">
             <span class="s-ico">🌫️</span>
-            <span class="s-txt" style="font-size:15px">背景の明るさ</span>
+            <span class="s-txt" style="font-size:15px">背景の透過</span>
             <input type="range" min="0" max="85" id="bgOpacitySlider" oninput="setBgOpacity(this.value)">
             <span class="s-slider-val" id="bgOpacityVal">0%</span>
           </div>
@@ -490,7 +490,7 @@ function toJST(date,time,secs){
 }
 function addEntry(date,time,content,images,tags){
   const iso=toJST(date,time);
-  entries.unshift({id:gid(),content,images,tags,timestamp:iso,date});
+  entries.unshift({id:gid(),content,images,tags,timestamp:iso,date,_ts:Date.now()});
 }
 function updateEntry(id,date,time,content,images,tags){
   const i=entries.findIndex(e=>e.id===id);
@@ -503,7 +503,14 @@ function updateEntry(id,date,time,content,images,tags){
   }
 }
 function delEntry(id){entries=entries.filter(e=>e.id!==id);saveE()}
-const sortEntries=(a,b)=>{const d=new Date(a.timestamp)-new Date(b.timestamp);return d!==0?d:(a.id<b.id?-1:1)};
+const sortEntries=(a,b)=>{
+  const d=new Date(a.timestamp)-new Date(b.timestamp);
+  if(d!==0)return d;
+  // 同一タイムスタンプ: _ts(ms)があれば投稿順、なければentries配列の位置で判定
+  if(a._ts&&b._ts)return a._ts-b._ts;
+  const ia=entries.indexOf(a),ib=entries.indexOf(b);
+  return ib-ia; // 配列後方(古い)を先に表示
+};
 function byDate(d){return entries.filter(e=>e.date===d).sort(sortEntries)}
 function allTags(){const s=new Set();entries.forEach(e=>e.tags.forEach(t=>s.add(t)));return[...s]}
 function allImgs(){const a=[];entries.forEach(e=>e.images.forEach(src=>a.push({src,ts:e.timestamp})));return a.sort((a,b)=>b.ts.localeCompare(a.ts))}
@@ -992,54 +999,54 @@ function renderAll(){
 }
 
 // ═══════════════════════════════════
-// APP ICON GENERATOR
+// APP ICON
 // ═══════════════════════════════════
-function genIcon(accent){
-  const cv=document.createElement('canvas');
-  cv.width=cv.height=512;
-  const c=cv.getContext('2d');
+function drawAppIcon(c){
   const rr=(x,y,w,h,r)=>{
-    c.beginPath();
-    c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
+    c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);
     c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
     c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);
-    c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);
-    c.closePath();
+    c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();
   };
-  // 背景グラデーション
-  const bg=c.createLinearGradient(0,0,512,512);
-  bg.addColorStop(0,accent);
-  bg.addColorStop(1,accent+'cc');
-  rr(0,0,512,512,100);c.fillStyle=bg;c.fill();
-  // 白いノート
-  c.fillStyle='rgba(255,255,255,.96)';
-  rr(120,90,272,332,16);c.fill();
-  // 背表紙（左）
-  c.fillStyle='rgba(0,0,0,.08)';
-  rr(120,90,42,332,16);c.fill();
-  c.clearRect(148,90,14,332);// 境界線をなめらかに
-  c.fillStyle='rgba(0,0,0,.05)';
-  c.fillRect(148,90,8,332);
-  // テキスト行
-  const lx=178,lw=[148,120,136,88];
-  lw.forEach((w,i)=>{
-    c.fillStyle=accent;
-    rr(lx,170+i*52,w,14,7);
-    c.fill();
+  const acc=(THEMES.find(t=>t.id===cfg.theme)||THEMES[0]).accent;
+  const bg=c.createLinearGradient(0,0,180,180);
+  bg.addColorStop(0,acc);bg.addColorStop(1,acc+'bb');
+  rr(0,0,180,180,36);c.fillStyle=bg;c.fill();
+  c.fillStyle='rgba(255,255,255,.96)';rr(42,30,96,120,6);c.fill();
+  c.fillStyle='rgba(0,0,0,.07)';rr(42,30,16,120,4);c.fill();
+  [[62,54,54],[62,70,42],[62,86,50],[62,102,30]].forEach(([x,y,w])=>{
+    c.fillStyle=acc;rr(x,y,w,5,2);c.fill();
   });
-  // 小さなハート
-  const hx=318,hy=350,s=28;
+  const [hx,hy,s]=[107,102,10];
   c.fillStyle='#FF7A8A';
-  c.beginPath();
-  c.moveTo(hx,hy+s*.35);
+  c.beginPath();c.moveTo(hx,hy+s*.35);
   c.bezierCurveTo(hx,hy,hx-s,hy,hx-s,hy+s*.35);
   c.bezierCurveTo(hx-s,hy+s*.9,hx,hy+s*1.3,hx,hy+s*1.45);
   c.bezierCurveTo(hx,hy+s*1.3,hx+s,hy+s*.9,hx+s,hy+s*.35);
-  c.bezierCurveTo(hx+s,hy,hx,hy,hx,hy+s*.35);
-  c.fill();
-  return cv.toDataURL('image/png');
+  c.bezierCurveTo(hx+s,hy,hx,hy,hx,hy+s*.35);c.fill();
 }
-function setAppIcon(){/* アイコンは apple-touch-icon.png で固定 */}
+function setAppIcon(){
+  const cv=document.createElement('canvas');cv.width=cv.height=180;
+  drawAppIcon(cv.getContext('2d'));
+  cv.toBlob(blob=>{
+    // blob URL で apple-touch-icon を差し替え（data:URI は iOS 非対応のため）
+    const iconUrl=URL.createObjectURL(blob);
+    const lnk=document.querySelector('link[rel="apple-touch-icon"]');
+    if(lnk)lnk.href=iconUrl;
+    // Web App Manifest（iOS 16.4 以降で有効）
+    const acc=(THEMES.find(t=>t.id===cfg.theme)||THEMES[0]).accent;
+    const manifest=JSON.stringify({
+      name:'つぶやき日記',short_name:'つぶやき日記',
+      display:'standalone',orientation:'portrait',
+      background_color:acc,theme_color:acc,start_url:'.',
+      icons:[{src:iconUrl,sizes:'180x180',type:'image/png',purpose:'any maskable'}]
+    });
+    const mBlob=new Blob([manifest],{type:'application/manifest+json'});
+    let ml=document.querySelector('link[rel="manifest"]');
+    if(!ml){ml=document.createElement('link');ml.rel='manifest';document.head.appendChild(ml);}
+    ml.href=URL.createObjectURL(mBlob);
+  },'image/png');
+}
 
 // ═══════════════════════════════════
 // INIT
