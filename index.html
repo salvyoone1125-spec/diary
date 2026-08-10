@@ -949,8 +949,8 @@ async function saveDayImg(){
   Object.assign(wrap.style,{width:'390px',background:getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()||'#F2F2F7',padding:'20px',fontFamily:'-apple-system,sans-serif',position:'absolute',left:'-9999px',top:'0'});
   wrap.innerHTML=`<div style="font-size:20px;font-weight:700;margin-bottom:16px">${fmtD(d)}</div>`+list.map(e=>`<div style="display:flex;gap:8px;margin-bottom:14px"><div style="font-size:11px;color:#8E8E93;min-width:32px;padding-top:4px">${fmtT(e.timestamp)}</div><div style="background:#fff;border-radius:18px;padding:11px 14px;flex:1;font-size:15px;line-height:1.55">${esc(e.content||'')}${e.images.map(s=>`<img src="${s}" style="width:100%;border-radius:10px;margin-top:8px;display:block">`).join('')}${e.tags.length?`<div style="margin-top:7px">${e.tags.map(t=>`<span style="font-size:12px;color:${cfg.accent||'#5BB8B8'};background:#E8F5F5;padding:2px 9px;border-radius:10px;margin-right:4px">${esc(t)}</span>`).join('')}</div>`:''}</div></div>`).join('');
   document.body.appendChild(wrap);
-  try{const cv=await html2canvas(wrap,{useCORS:true,scale:2});const a=document.createElement('a');a.download=`diary_${d}.png`;a.href=cv.toDataURL('image/png');a.click();snack('画像を保存しました')}
-  catch{snack('画像生成に失敗しました')}
+  try{const cv=await html2canvas(wrap,{useCORS:true,scale:2});cv.toBlob(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.download=`diary_${d}.png`;a.href=url;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)},'image/png');snack('画像を保存しました')}
+    catch{snack('画像生成に失敗しました')}
   document.body.removeChild(wrap);closeModal('saveDayModal');
 }
 
@@ -961,12 +961,17 @@ function closeModal(id){document.getElementById(id).classList.add('hide')}
 function clearAll(){if(confirm('全データを削除しますか？')){entries=[];saveE();renderAll();snack('削除しました')}}
 
 function exportJSON(){
-  const data=JSON.stringify({entries,exportedAt:new Date().toISOString()},null,2);
-  const a=document.createElement('a');
-  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
-  a.download=`diary_backup_${ds(new Date())}.json`;
-  a.click();
-  snack('エクスポートしました');
+    const data=JSON.stringify({entries,exportedAt:new Date().toISOString()},null,2);
+    const blob=new Blob([data],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`diary_backup_${ds(new Date())}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    snack('エクスポートしました');
 }
 
 function importJSON(input){
